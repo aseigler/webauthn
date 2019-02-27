@@ -24,7 +24,7 @@ type Authenticator struct {
 func SelectAuthenticator(att string, rrk bool, uv string) p.AuthenticatorSelection {
 	return p.AuthenticatorSelection{
 		AuthenticatorAttachment: p.AuthenticatorAttachment(att),
-		RequireResidentKey:      rrk,
+		RequireResidentKey:      &rrk,
 		UserVerification:        p.UserVerificationRequirement(uv),
 	}
 }

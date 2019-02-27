@@ -2,6 +2,7 @@ package webauthn
 
 import (
 	"bytes"
+	"encoding/base64"
 	"net/http"
 
 	"github.com/duo-labs/webauthn/protocol"
@@ -22,7 +23,7 @@ func (webauthn *WebAuthn) BeginRegistration(user User, opts ...RegistrationOptio
 	}
 
 	webAuthnUser := protocol.UserEntity{
-		ID:          user.WebAuthnID(),
+		ID:          base64.RawURLEncoding.EncodeToString(user.WebAuthnID()),
 		DisplayName: user.WebAuthnDisplayName(),
 		CredentialEntity: protocol.CredentialEntity{
 			Name: user.WebAuthnName(),
@@ -42,12 +43,11 @@ func (webauthn *WebAuthn) BeginRegistration(user User, opts ...RegistrationOptio
 
 	authSelection := protocol.AuthenticatorSelection{
 		AuthenticatorAttachment: protocol.CrossPlatform,
-		RequireResidentKey:      false,
 		UserVerification:        protocol.VerificationPreferred,
 	}
 
 	creationOptions := protocol.PublicKeyCredentialCreationOptions{
-		Challenge:              challenge,
+		Challenge:              base64.RawURLEncoding.EncodeToString(challenge),
 		RelyingParty:           relyingParty,
 		User:                   webAuthnUser,
 		Parameters:             credentialParams,
@@ -93,6 +93,13 @@ func WithConveyancePreference(preference protocol.ConveyancePreference) Registra
 		cco.Attestation = preference
 	}
 }
+func WithExtensions(preference protocol.AuthenticationExtensions) RegistrationOption {
+	return func(cco *protocol.PublicKeyCredentialCreationOptions) {
+		cco.Extensions = preference
+	}
+}
+
+// Provide extensions.
 func WithExtensions(preference protocol.AuthenticationExtensions) RegistrationOption {
 	return func(cco *protocol.PublicKeyCredentialCreationOptions) {
 		cco.Extensions = preference
